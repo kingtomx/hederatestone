@@ -1,0 +1,40 @@
+plugins {
+    id 'org.springframework.boot' version '2.6.1'
+    id 'org.jetbrains.kotlin.jvm' version '1.6.10'
+}
+
+apply plugin: 'java'
+apply plugin: 'io.spring.dependency-management'
+
+group 'org.mvp.hedera'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.2'
+    testRuntimeOnly 'io.projectreactor:reactor-test:3.4.14'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux:2.6.2'
+    implementation 'org.springframework.security:spring-security-core:5.5.1'
+    implementation 'org.springframework.security:spring-security-config:5.5.1'
+    implementation 'com.hedera.hashgraph:sdk:2.5.0'
+    implementation 'io.grpc:grpc-netty-shaded:1.43.2'
+    implementation 'io.github.cdimascio:java-dotenv:5.2.2'
+    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive:2.6.2'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb:2.6.2'
+    implementation 'io.github.microutils:kotlin-logging-jvm:2.1.21'
+    implementation 'org.jetbrains.kotlin:kotlin-reflect:1.6.10'
+}
+
+springBoot {
+    mainClass = "org.mvp.hedera.SpringbootRunner"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+

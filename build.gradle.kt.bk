@@ -1,0 +1,23 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+plugins {
+    application
+    kotlin("jvm") version "1.6.10"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.6.10"
+}
+val kotlinVersion = "1.6.10"
+
+group 'org.mvp.hedera'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+application {
+    mainClassName = "org.mvp.hedera.SpringbootRunner"
+}
+
+dependencies {
+    compile(kotlin("stdlib"))
+}
