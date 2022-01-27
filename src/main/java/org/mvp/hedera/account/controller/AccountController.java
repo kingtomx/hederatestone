@@ -27,7 +27,7 @@ public class AccountController {
 
     @RequestMapping(value="/", method = RequestMethod.POST, headers = {"Content-type=application/json"})
     public Mono<Document> create() throws ReceiptStatusException, JsonProcessingException, PrecheckStatusException, TimeoutException {
-        return accountManagement.executeCreateAccount();
+        return accountManagement.executeCreateAccount(1000);
     }
 
 

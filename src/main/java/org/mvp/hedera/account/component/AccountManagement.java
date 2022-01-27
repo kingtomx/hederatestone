@@ -27,25 +27,22 @@ public class AccountManagement {
     @Autowired
     ObjectMapper objectMapper;
 
-    public Mono<Document> executeCreateAccount() throws PrecheckStatusException, TimeoutException {
-
-        Client client = hederaConfiguration.hederaClient();
+    public Mono<Document> executeCreateAccount(long initialBalance) {
 
 
-        PrivateKey newAccountPrivateKey = hederaConfiguration.hederaPrivateKey().generate();
-        PublicKey newAccountPublicKey = hederaConfiguration.hederaPrivateKey().getPublicKey();
-
-        TransactionResponse newAccount = new AccountCreateTransaction()
-                .setKey(newAccountPublicKey)
-                .setInitialBalance( Hbar.fromTinybars(1000))
-                .execute(client);
 
         // Get the new account ID
 
         return Mono.fromCallable(() -> {
+            Client client = hederaConfiguration.hederaClient();
+            PrivateKey newAccountPrivateKey = hederaConfiguration.hederaPrivateKey().generate();
+            PublicKey newAccountPublicKey = hederaConfiguration.hederaPrivateKey().getPublicKey();
+            TransactionResponse newAccount = new AccountCreateTransaction()
+                    .setKey(newAccountPublicKey)
+                    .setInitialBalance( Hbar.fromTinybars(initialBalance))
+                    .execute(client);
             return newAccount.getReceipt(client).accountId;
         }).flatMap(accountId -> {
-
             try {
                 TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
                 HashMap<String, Object> accountMap = objectMapper.readValue(objectMapper.writeValueAsString(accountId), typeRef);
@@ -53,8 +50,7 @@ public class AccountManagement {
             } catch (JsonProcessingException e) {
                 return Mono.error(e);
             }
-
-        });
+        }).switchIfEmpty(Mono.error(new Exception()));
 
 
 
