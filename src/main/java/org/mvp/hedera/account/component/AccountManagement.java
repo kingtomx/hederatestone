@@ -10,12 +10,13 @@ import org.mvp.hedera.conf.HederaConfiguration;
 import org.mvp.hedera.repository.ReactiveBusinessRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.concurrent.TimeoutException;
 
-@Component
+@Service
 public class AccountManagement {
 
     @Autowired
