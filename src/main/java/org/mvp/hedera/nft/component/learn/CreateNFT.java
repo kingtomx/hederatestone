@@ -34,7 +34,7 @@ public class CreateNFT {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public Mono<Document> runCreation(String tokenName, String tokenSymbol, long initialSupply, long maxSupply) {
+    private Mono<Document> runTokenCreation(String tokenName, String tokenSymbol, long initialSupply, long maxSupply) {
 
           return accountManagement.executeCreateAccount(1000)
                 .doOnError(TimeoutException.class, error1 -> {})
@@ -63,39 +63,62 @@ public class CreateNFT {
                     try {
                         TransactionResponse nftCreateSubmit = nftCreateTxSign.execute(client);
                         TransactionReceipt nftCreateRx = nftCreateSubmit.getReceipt(client);
-                        TokenId tokenId =  nftCreateRx.tokenId;
-                        return Tuples.of(tokenId, accountId_string);
+                        TokenId tokenId = nftCreateRx.tokenId;
+                        return Tuples.of(tokenId, accountId_string, supplyKey);
                     } catch (TimeoutException e) {
-                        logger.error("TimeoutException: ", e.getMessage());
                         return Tuples.of(TokenId.fromString(""), e.getMessage());
                     } catch (PrecheckStatusException e) {
-                        logger.error("PrecheckStatusException: ", e.getMessage());
                         return Tuples.of(TokenId.fromString(""), e.getMessage());
                     } catch (ReceiptStatusException e) {
-                        logger.error("ReceiptStatusException: ", e.getMessage());
                         return Tuples.of(TokenId.fromString(""), e.getMessage());
                     }
-
+                }).doOnError(TimeoutException.class, error -> {
+                      logger.error("TimeoutException: ", error.getMessage());
+                  }).doOnError(PrecheckStatusException.class, error -> {
+                      logger.error("PrecheckStatusException: ", error.getMessage());
+                }).doOnError(ReceiptStatusException.class, error -> {
+                      logger.error("ReceiptStatusException: ", error.getMessage());
                 }).flatMap(tuple -> {
                       return tokenManagement.executeCreateToken(tuple.getT1(), tuple.getT2());
                 });
 
-
         }
 
-        @PostConstruct
-        public void runNFT() {
 
-            //Hooks.onOperatorDebug();
+    private void runMintNFT(TokenId tokenId, PrivateKey supplyKey) throws PrecheckStatusException, TimeoutException, ReceiptStatusException {
 
-            runCreation("diploma", "GRAD", 0, 10)
-                    .subscribe(tokenDocument -> {
-                        logger.info(" TokenId: {}", tokenDocument.toString());
-                    }, error -> {
-                        logger.error("Error: ", error);
-                    });
+        Client client = exampleConfiguration.hederaClient();
+        // Mint a new NFT
+        TokenMintTransaction mintTx = new TokenMintTransaction()
+                        .setTokenId(tokenId)
+                        .addMetadata("<<<<<<<<<<<<<<< METADATA >>>>>>>>>>>>".getBytes())
+                        .freezeWith(client);
 
-        }
+        //Sign transaction with the supply key
+        TokenMintTransaction mintTxSign = mintTx.sign(supplyKey);
+
+        //Submit the transaction to a Hedera network
+        TransactionResponse mintTxSubmit = mintTxSign.execute(client);
+
+        //Get the transaction receipt
+        TransactionReceipt mintRx = mintTxSubmit.getReceipt(client);
+
+        //Log the serial number
+        System.out.println("Created NFT " +tokenId + "with serial: " +mintRx.serials);
+
+    }
+
+
+
+    @PostConstruct
+    public void runNFT() {
+        runTokenCreation("diploma", "GRAD", 0, 10)
+            .subscribe(tokenDocument -> {
+                logger.info(" TokenId: {}", tokenDocument.toString());
+            }, error -> {
+                logger.error("Error: ", error);
+            });
+    }
 
 
 
